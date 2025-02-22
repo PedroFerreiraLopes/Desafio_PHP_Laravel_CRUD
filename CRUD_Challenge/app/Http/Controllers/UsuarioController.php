@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Usuario;
 use App\Http\Requests\ProfileUpdateRequest;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
@@ -17,7 +19,8 @@ class UsuarioController extends Controller
      */
     public function index()
     {
-        //
+        $usuarios = Usuario::all();
+        return view('usuarios.index', compact('usuarios'));
     }
 
     /**
@@ -25,7 +28,7 @@ class UsuarioController extends Controller
      */
     public function create()
     {
-        //
+        return view('usuarios.create');
     }
 
     /**
@@ -33,7 +36,22 @@ class UsuarioController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'nome' => ['required', 'string', 'max:255'],
+            'data_nascimento' => ['required', 'date'],
+            'cpf' => ['required', 'cpf'],
+            'telefone' => ['required', 'celular_com_ddd'],
+            'genero' => 'required|in:Masculino,Feminino,Não Declarado',
+            'senha' => ['required', 'confirmed'],
+        ]);
+
+        $usuario = Usuario::create($request->all());
+
+        event(new Registered($usuario));
+
+        Auth::login($usuario);
+
+        return redirect(route('dashboard', absolute: false));
     }
 
     /**
@@ -41,7 +59,7 @@ class UsuarioController extends Controller
      */
     public function show(Usuario $usuario)
     {
-        //
+        return view('usuarios.show', compact('usuario'));
     }
 
     /**
@@ -59,11 +77,18 @@ class UsuarioController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $request->validate([
+            'nome' => ['required', 'string', 'max:255'],
+            'data_nascimento' => ['required', 'date'],
+            'cpf' => ['required', 'cpf'],
+            'telefone' => ['required', 'celular_com_ddd'],
+            'genero' => 'required|in:Masculino,Feminino,Não Declarado',
+            'senha' => ['required', 'confirmed'],
+        ]);
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
-        }
+        $usuario->update($request->all());
+
+        $request->user()->fill($request->validated());
 
         $request->user()->save();
 
