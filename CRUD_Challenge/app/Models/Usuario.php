@@ -10,7 +10,7 @@ use Illuminate\Notifications\Notifiable;
 class Usuario extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -62,5 +62,10 @@ class Usuario extends Authenticatable
             // 'genero' => ,
             'senha' => 'hashed',
         ];
+    }
+
+    public function getAuthPassword()
+    {
+        return $this->senha;
     }
 }
