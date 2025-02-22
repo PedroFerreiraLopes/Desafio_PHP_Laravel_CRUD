@@ -36,6 +36,16 @@ class UsuarioController extends Controller
      */
     public function store(Request $request)
     {
+        $ddd = "(" . substr($request->telefone, 0, 2) . ")";
+        if (strlen($request->telefone) == 10) {
+            $telefone_formatado = $ddd . substr($request->telefone, 2, 4) . "-" . substr($request->telefone, 6, 4);
+        }
+        else {
+            $telefone_formatado = $ddd . substr($request->telefone, 2, 5) . "-" . substr($request->telefone, 7);
+        }
+
+        $request['telefone'] = $telefone_formatado;
+
         $request->validate([
             'nome' => ['required', 'string', 'max:255'],
             'data_nascimento' => ['required', 'date'],
@@ -75,7 +85,7 @@ class UsuarioController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(ProfileUpdateRequest $request, Usuario $usuario): RedirectResponse
     {
         $request->validate([
             'nome' => ['required', 'string', 'max:255'],
