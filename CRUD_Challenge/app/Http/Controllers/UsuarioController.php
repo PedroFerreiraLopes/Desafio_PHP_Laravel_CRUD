@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Usuario;
+use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -20,15 +21,35 @@ class UsuarioController extends Controller
     public function index()
     {
         $usuarios = Usuario::all();
-        return view('usuarios.index', compact('usuarios'));
+        return view('dashboard', compact('usuarios'));
     }
 
+    public function login(): View
+    {
+        return view('auth.login');
+    }
+
+    public function logout(Request $request)
+    {
+        // Auth::guard('web')->logout();
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/');
+    }
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(LoginRequest $request): RedirectResponse
     {
-        return view('usuarios.create');
+        // dd($request);
+        $request->authenticate();
+
+        $request->session()->regenerate();
+
+        return redirect()->intended(route('/', absolute: false));
     }
 
     /**
@@ -61,7 +82,7 @@ class UsuarioController extends Controller
 
         Auth::login($usuario);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect(route('/', absolute: false));
     }
 
     /**
@@ -108,21 +129,13 @@ class UsuarioController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Usuario $usuario)
     {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
-
-        $user = $request->user();
-
-        Auth::logout();
-
-        $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return Redirect::to('/');
+        if (auth()->id() === $usuario->id) {
+            $usuario->delete();
+            return redirect()->route('landing')->with('success', 'Conta excluída com sucesso!');
+        }
+    
+        return redirect()->route('landing')->with('error', 'Você não tem permissão para excluir esta conta.');
     }
 }
