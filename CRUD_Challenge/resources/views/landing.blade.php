@@ -28,8 +28,24 @@
                             href="{{ url('/dashboard') }}"
                             class="rounded-md px-3 py-2 text-black ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
                         >
-                            Dashboard
+                            Ver Todos Usuários
                         </a>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+
+                            <a :href="route('logout')"
+                                class="rounded-md px-3 py-2 text-black ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+                                    onclick="event.preventDefault();
+                                                this.closest('form').submit();">
+                                {{ __('Sair') }}
+                            </a>
+                        </form>
+                        {{-- <a
+                            href="{{ url('/logout') }}"
+                            class="rounded-md px-3 py-2 text-black ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+                        >
+                            Sair
+                        </a> --}}
                     @else
                         <a
                             href="{{ route('login') }}"
@@ -56,14 +72,26 @@
 
             <div class="flex gap-3">
                 @if (Route::has('login'))
-                    <nav class="-mx-3 flex flex-1 justify-end">
+                    <div class="-mx-3 flex flex-col flex-1 justify-end">
                         @auth
-                            <a
-                                href="{{ url('/dashboard') }}"
-                                class="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
-                            >
-                                Dashboard
-                            </a>
+                            <div class="p-4">
+                                <h2 class="text-lg font-semibold">Dados do Usuário</h2>
+                                <p><strong>Nome:</strong> {{ auth()->user()->nome }}</p>
+                                <p><strong>CPF:</strong> {{ auth()->user()->cpf }}</p>
+                                <p><strong>Data de Nascimento:</strong> {{ auth()->user()->data_nascimento->format('d/m/Y') }}</p>
+                                <p><strong>Telefone:</strong> {{ auth()->user()->telefone }}</p>
+                                <p><strong>Gênero:</strong> {{ auth()->user()->genero }}</p>
+                            </div>
+
+                            <div class="p-4">
+                                <form action="{{ route('usuario.destroy', auth()->user()) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600">
+                                        Excluir Minha Conta
+                                    </button>
+                                </form>
+                            </div>
                         @else
                             <a
                                 href="{{ route('login') }}"
@@ -81,7 +109,7 @@
                                 </a>
                             @endif
                         @endauth
-                    </nav>
+                    </div>
                 @endif
             </div>
             {{-- <div class="grid gap-6 lg:grid-cols-2 lg:gap-8">
