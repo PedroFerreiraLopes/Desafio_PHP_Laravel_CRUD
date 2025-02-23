@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('nome');
             $table->date('data_nascimento');
             $table->integer('cpf')->unique();
-            $table->integer('telefone')->unique();
+            $table->string('telefone')->unique();
             $table->string('senha');
             $table->rememberToken();
             $table->timestamps();
